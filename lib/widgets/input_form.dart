@@ -2,14 +2,20 @@ import 'package:agora_dynamic_channels/pages/lobby.dart';
 import 'package:agora_dynamic_channels/widgets/verticalspacer.dart';
 import 'package:flutter/material.dart';
 
-class InputForm extends StatelessWidget {
+class InputForm extends StatefulWidget {
   static final _loginformKey = GlobalKey<FormState>();
-  TextEditingController _username = TextEditingController();
+
+  @override
+  _InputFormState createState() => _InputFormState();
+}
+
+class _InputFormState extends State<InputForm> {
+  final TextEditingController _username = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: _loginformKey,
+      key: InputForm._loginformKey,
       child: Container(
           width: MediaQuery.of(context).size.width * 0.8,
           child: Column(
@@ -19,10 +25,10 @@ class InputForm extends StatelessWidget {
               Container(
                 width: MediaQuery.of(context).size.width * 0.5,
                 child: Image.network(
-                    'https://www.agora.io/en/wp-content/uploads/2019/06/agoralightblue-1.png'),
+                    'https://investor.agora.io/system/files-encrypted/nasdaq_kms/inline-images/agoralightblue-logo-updated.png'),
               ),
               VerticalSpacer(
-                percentage: 0.15,
+                percentage: 0.1,
               ),
               Container(
                 width: MediaQuery.of(context).size.width * 0.8,
@@ -60,7 +66,7 @@ class InputForm extends StatelessWidget {
                 ),
               ),
               VerticalSpacer(
-                percentage: 0.3,
+                percentage: 0.25,
               ),
               Container(
                 alignment: Alignment.bottomCenter,

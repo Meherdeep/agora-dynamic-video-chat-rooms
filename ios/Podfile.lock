@@ -8,11 +8,14 @@ PODS:
   - AgoraRtcEngine_iOS (3.3.1)
   - AgoraRtm_iOS (1.2.2)
   - Flutter (1.0.0)
+  - permission_handler (5.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - agora_rtc_engine (from `.symlinks/plugins/agora_rtc_engine/ios`)
   - agora_rtm (from `.symlinks/plugins/agora_rtm/ios`)
   - Flutter (from `Flutter`)
+  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
 
 SPEC REPOS:
   trunk:
@@ -26,6 +29,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/agora_rtm/ios"
   Flutter:
     :path: Flutter
+  permission_handler:
+    :path: ".symlinks/plugins/permission_handler/ios"
 
 SPEC CHECKSUMS:
   agora_rtc_engine: 72d3da83dd75e98aa9650ea64e1534f5e365e841
@@ -33,6 +38,7 @@ SPEC CHECKSUMS:
   AgoraRtcEngine_iOS: 17e55feec1bde14adc30fd9d743332d1e7821b62
   AgoraRtm_iOS: c6ba986a3af73dd0f02e6e2995ae4fe9c155e6ae
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  permission_handler: 7022f8972d2d85ce95c1040db945f28bdbfa45d1
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
