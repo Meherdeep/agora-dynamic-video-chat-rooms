@@ -18,11 +18,9 @@ class LobbyPage extends StatefulWidget {
 class _LobbyPageState extends State<LobbyPage> {
   bool _isChannelCreated = true;
   final _channelFieldController = TextEditingController();
-  static final listOfChannels = <String>[];
-  String messageSender = '';
+  String myChannel = '';
 
   final Map<String, List<String>> _seniorMember = {};
-
   final Map<String, int> _channelList = {};
 
   bool muted = false;
@@ -30,7 +28,8 @@ class _LobbyPageState extends State<LobbyPage> {
   bool _isInChannel = false;
 
   int count = 1;
-  int count2 = 1;
+
+  int x = 0;
 
   AgoraRtmClient _client;
   AgoraRtmChannel _channel;
@@ -41,7 +40,8 @@ class _LobbyPageState extends State<LobbyPage> {
     _channel.leave();
     _client.logout();
     _client.destroy();
-    listOfChannels.clear();
+    _seniorMember.clear();
+    _channelList.clear();
     super.dispose();
   }
 
@@ -149,6 +149,8 @@ class _LobbyPageState extends State<LobbyPage> {
   Future<void> _createChannels(String channelName) async {
     setState(() {
       _channelList.putIfAbsent(channelName, () => 1);
+      _seniorMember.putIfAbsent(channelName, () => [widget.username]);
+      myChannel = channelName;
     });
     await _channel
         .sendMessage(AgoraRtmMessage.fromText('$channelName' + ':' + '1'));
@@ -226,20 +228,38 @@ class _LobbyPageState extends State<LobbyPage> {
           "Member joined: " + member.userId + ', channel: ' + member.channelId);
       print('All the members in the channel :  ');
       channel.getMembers().then((value) => print(value));
-      for (int i = 0; i < _channelList.length; i++) {
-        await _client.sendMessageToPeer(
-            member.userId,
-            AgoraRtmMessage.fromText(_channelList.keys.toList()[i] +
-                ':' +
-                _channelList.values.toList()[i].toString()));
-      }
-      // if (member.userId == messageSender) {
-      //   _client.sendMessageToPeer(member.userId,
-      //       AgoraRtmMessage.fromText(_channelFieldController.text));
+
+      _seniorMember.values.forEach(
+        (element) async {
+          if (element.first == widget.username) {
+            // retrieve the number of users in a channel from the _channelList
+            for (int i = 0; i < _channelList.length; i++) {
+              if (_channelList.keys.toList()[i] == myChannel) {
+                setState(() {
+                  x = _channelList.values.toList()[i];
+                });
+              }
+            }
+
+            String data = myChannel + ':' + x.toString();
+            await _client.sendMessageToPeer(
+                member.userId, AgoraRtmMessage.fromText(data));
+          }
+        },
+      );
+
+      // for (int i = 0; i < _channelList.length; i++) {
+      //   await _client.sendMessageToPeer(
+      //       member.userId,
+      //       AgoraRtmMessage.fromText(_channelList.keys.toList()[i] +
+      //           ':' +
+      //           _channelList.values.toList()[i].toString()));
       // }
     };
-    channel.onMemberLeft = (AgoraRtmMember member) {
+
+    channel.onMemberLeft = (AgoraRtmMember member) async {
       print("Member left: " + member.userId + ', channel: ' + member.channelId);
+      await leaveCall(member.channelId, member.userId);
     };
     channel.onMessageReceived =
         (AgoraRtmMessage message, AgoraRtmMember member) async {
@@ -249,10 +269,9 @@ class _LobbyPageState extends State<LobbyPage> {
         setState(() {
           _channelList.update(data[0], (v) => int.parse(data[1]));
         });
-        if (int.parse(data[1]) == 2) {
+        if (int.parse(data[1]) >= 2 && int.parse(data[1]) < 5) {
           await _handleCameraAndMic(Permission.camera);
           await _handleCameraAndMic(Permission.microphone);
-          await _subchannel.release();
 
           Navigator.push(
             context,
@@ -284,6 +303,17 @@ class _LobbyPageState extends State<LobbyPage> {
     print(
         'Number of the people in the created channel : $numberOfPeopleInThisChannel');
 
+    _subchannel.getMembers().then(
+          (value) => value.forEach(
+            (element) {
+              setState(() {
+                _seniorMember.update(
+                    channelName, (value) => value + [element.toString()]);
+              });
+            },
+          ),
+        );
+
     setState(() {
       _channelList.update(channelName, (value) => numberOfPeopleInThisChannel);
     });
@@ -291,10 +321,10 @@ class _LobbyPageState extends State<LobbyPage> {
     _channel.sendMessage(AgoraRtmMessage.fromText(
         '$channelName' + ':' + '$numberOfPeopleInThisChannel'));
 
-    if (numberOfPeopleInThisChannel == 2) {
+    if (numberOfPeopleInThisChannel >= 2 && numberOfPeopleInThisChannel < 5) {
       await _handleCameraAndMic(Permission.camera);
       await _handleCameraAndMic(Permission.microphone);
-      await _subchannel.release();
+      await _subchannel.leave();
 
       Navigator.push(
         context,
@@ -308,6 +338,22 @@ class _LobbyPageState extends State<LobbyPage> {
   Future<void> _handleCameraAndMic(Permission permission) async {
     final status = await permission.request();
     print(status);
+  }
+
+  Future<void> leaveCall(String channelName, String leftUser) {
+    setState(() {
+      _channelList.update(channelName, (value) => value - 1);
+    });
+
+    _seniorMember.values.forEach((element) {
+      if (element.first == leftUser) {
+        setState(() {
+          _seniorMember.values.forEach((element) {
+            element.remove(leftUser);
+          });
+        });
+      }
+    });
   }
 
   Future<bool> _onBackPressed() {
