@@ -1,1 +1,1 @@
-var appID = '';
+const appID = '';
